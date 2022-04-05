@@ -19,8 +19,12 @@ const port = process.env.PORT || 3000
 io.on('connection', (socket) => {
     console.log('New webSocket connection')
 
-    socket.emit('messageUpdated', generateMessage('Welcome!'))
-    socket.broadcast.emit('messageUpdated', generateMessage('A new user has joined'))
+    socket.on('join', ({username, room}) => {
+        socket.join(room)
+
+        socket.emit('messageUpdated', generateMessage('Welcome!'))
+        socket.broadcast.to(room).emit('messageUpdated', generateMessage(`${username} has joined!`))
+    })
 
     socket.on('sendMessage', (message, callback) => {
         const filter = new Filter()
@@ -28,7 +32,7 @@ io.on('connection', (socket) => {
         if(filter.isProfane(message)){
             return callback('profenity is not allowed')
         }
-        io.emit('messageUpdated', generateMessage(message))
+        io.to('usa').emit('messageUpdated', generateMessage(message))
         callback()
     })
 
