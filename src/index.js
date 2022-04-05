@@ -3,6 +3,7 @@ const http = require('http')
 const express = require('express')
 const socketio = require('socket.io')
 const Filter = require('bad-words')
+const {generateMessage, generateLocationMessage} = require('./utils/messages')
 
 const app = express()
 const server = http.createServer(app)
@@ -14,25 +15,30 @@ app.use(express.static(publicDirectoryPath))
 
 const port = process.env.PORT || 3000
 
-let message = 'Welcome to XO chat application'
 
 io.on('connection', (socket) => {
     console.log('New webSocket connection')
 
-    socket.emit('messageUpdated', message)
-    socket.broadcast.emit('messageUpdated', 'A new user has joined')
+    socket.emit('messageUpdated', generateMessage('Welcome!'))
+    socket.broadcast.emit('messageUpdated', generateMessage('A new user has joined'))
 
     socket.on('sendMessage', (message, callback) => {
-        io.emit('messageUpdated', message)
-        callback('Delivered!')
+        const filter = new Filter()
+
+        if(filter.isProfane(message)){
+            return callback('profenity is not allowed')
+        }
+        io.emit('messageUpdated', generateMessage(message))
+        callback()
     })
 
     socket.on('disconnect', () => {
-        io.emit('messageUpdated', 'A user has left')
+        io.emit('messageUpdated', generateMessage('A user has left'))
     })
 
-    socket.on('sendLocation', (coords) => {
-        io.emit('messageUpdated', `https://google.com/maps?=${coords.latitude}${coords.longitude}`)
+    socket.on('sendLocation', (coords, callback) => {
+        io.emit('locationMessage', generateLocationMessage(`https://google.com/maps?=${coords.latitude}${coords.longitude}`))
+        callback()
     })
 })
 
