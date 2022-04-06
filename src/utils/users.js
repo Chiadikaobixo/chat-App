@@ -20,7 +20,7 @@ const addUser = ({id, username, room}) => {
    //validate username
    if(existingUser){
        return{
-           error: 'Username not available'
+           error: 'Username not available!'
        }
    }
 
@@ -38,15 +38,21 @@ const removeUser = (id) => {
     }
 }
 
-addUser({
-    id:3,
-    username: 'xoxoF  ',
-    room: 'franchise'
-})
+const getUser = (id) => {
+    const user = users.find((user) => user.id === id)
 
-console.log(users)
+    return user
+}
 
-const removedUser = removeUser(3)
+const getUsersInRoom = (room) => {
+    const usersInRoom = users.filter((user) => user.room === room )
 
-console.log(removedUser)
-console.log(users)
+    return usersInRoom
+}
+
+module.exports = {
+    addUser,
+    removeUser,
+    getUser,
+    getUsersInRoom
+}
