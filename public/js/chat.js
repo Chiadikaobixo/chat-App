@@ -8,31 +8,54 @@ const $locationButton = document.querySelector('#send-location')
 const $messages = document.querySelector('#messages')
 
 //Templates
-const $messageTemplate = document.querySelector('#message-template').innerHTML
-const $locationTemplate = document.querySelector('#location-template').innerHTML
+const messageTemplate = document.querySelector('#message-template').innerHTML
+const locationTemplate = document.querySelector('#location-template').innerHTML
 const sidebarTemplate = document.querySelector('#sidebar-template').innerHTML
 
 //Options
 const {username, room} = Qs.parse(location.search, {ignoreQueryPrefix: true})
 
+const autoscroll = () => {
+    //new massage element
+    const $newMessage = $messages.lastElementChild
+
+    //Height of newMessage
+    const newMessageStyles = getComputedStyle($newMessage)
+    const newMessageMargin = parseInt(newMessageStyles.marginBottom)
+    const newMessageHeight = $newMessage.offsetHeight + newMessageMargin
+
+    //visibleHeight
+    const visibleHeight = $messages.offsetHeight
+
+    //Height of messages container
+    const containerHeight = $messages.scrollHeight
+
+    //How far have i scrolled?
+    const scrollOffset = $messages.scrollTop + visibleHeight
+
+    if(containerHeight - newMessageHeight <= scrollOffset){
+        $messages.scrollTop = $messages.scrollHeight
+    }
+}
+
 socket.on('messageUpdated', (message) => {
-    console.log(message)
-    const html = Mustache.render($messageTemplate, {
+    const html = Mustache.render(messageTemplate, {
         username: message.username,
         message: message.text,
         createdAt: moment(message.createdAt).format('h:mm a')
     })
-    $messages.insertAdjacentHTML('beforeend', html) 
+    $messages.insertAdjacentHTML('beforeend', html)
+    autoscroll()
 })
 
 socket.on('locationMessage', (message) => {
-    console.log(message)
-    const html = Mustache.render($locationTemplate, {
+    const html = Mustache.render(locationTemplate, {
         username: message.username,
         url: message.url,
         createdAt: moment(message.createdAt).format('h:mm a')
     })
     $messages.insertAdjacentHTML('beforeend', html)
+    autoscroll()
 })
 
 socket.on('roomData', ({room, users}) => {
@@ -56,7 +79,6 @@ $messageForm.addEventListener('submit', (e) => {
         if (error) {
             return console.log(error)
         }
-        console.log('message delivered')
     })
 })
 
@@ -70,7 +92,6 @@ $locationButton.addEventListener('click', () => {
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude
             }, () => {
-                console.log('location shared')
                 $locationButton.removeAttribute('disabled')
             })
         })
