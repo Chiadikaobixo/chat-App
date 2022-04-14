@@ -1,6 +1,8 @@
 Chat Application
 A web chat application using socket.io and expressJS
 
+📌Click [here](https://chiadi-chat-application.herokuapp.com "chat App") to checkout the deployed application.
+
 Requirements
 Express 
 Socket.io 
